@@ -1,11 +1,5 @@
 import { computed, Injectable, signal } from '@angular/core';
-
-interface Product {
-  name: string;
-  price: number;
-  image: string;
-}
-
+import { Product } from '../model/product.interface';
 @Injectable({
   providedIn: 'root',
 })

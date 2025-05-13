@@ -10,7 +10,8 @@ import { Product } from './model/product.interface';
   styleUrl: './app.component.scss',
 })
 export class AppComponent {
-  title = 'ecommerce-agentic-ai';
+
+  public title = 'Ecommerce Agentic AI';
   public productsService = inject(ProductService);
 
   productList = signal<Product[]>([]);

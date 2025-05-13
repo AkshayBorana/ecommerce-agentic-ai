@@ -10,9 +10,10 @@ export const appConfig: ApplicationConfig = {
   providers: [
     provideZoneChangeDetection({ eventCoalescing: true }),
     provideRouter(routes),
-    provideFirebaseApp(() => firebaseApp,     {
+    provideFirebaseApp(()=> firebaseApp),
+    {
       provide: "FIREBASE_APP", useValue: firebaseApp
-    }),
+    }
   ]
 };
 

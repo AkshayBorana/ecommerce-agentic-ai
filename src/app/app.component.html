@@ -1,1 +1,27 @@
+<header class="page-header">
+  <h1>{{ title }}</h1>
+  <p>
+    Cart: {{ productsService.productCart().length }} -
+    {{ productsService.productCartTotal() }}
+  </p>
+</header>
+<section class="container">
+  <section class="product-listing">
+    <ul>
+      @for(product of productList(); track product.name){
+      <li class="product-card">
+        <img class="product-image" [src]="product.image" alt="{{ product.name }}"width="150" height="214" />
+        <div class="product-info">
+          <p class="product-price">{{ product.price }}</p>
+          <p class="product-name">{{ product.name }}</p>
+          <button (click)="addToCart(product)" class="add-to-cart-btn">
+            Add to Cart
+          </button>
+        </div>
+      </li>
+      }
+    </ul>
+  </section>
+</section>
+
 <router-outlet />

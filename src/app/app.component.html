@@ -10,7 +10,7 @@
     <ul>
       @for(product of productList(); track product.name){
       <li class="product-card">
-        <img class="product-image" [src]="product.image" alt="{{ product.name }}"width="150" height="214" />
+        <img class="product-image" [src]="product.image" alt="{{ product.name }}" width="150" height="214" />
         <div class="product-info">
           <p class="product-price">{{ product.price }}</p>
           <p class="product-name">{{ product.name }}</p>

@@ -5,15 +5,16 @@ import {
   signal,
   viewChild,
 } from '@angular/core';
-import { RouterOutlet } from '@angular/router';
+// import { RouterOutlet } from '@angular/router';
 import { ProductService } from './services/products.service';
 import { Product } from './model/product';
 import { Message } from './model/message';
 import { VertexAIService } from './services/vertex.ai.service';
+import { CurrencyPipe } from "@angular/common";
 
 @Component({
   selector: 'app-root',
-  imports: [RouterOutlet],
+  imports: [CurrencyPipe],
   templateUrl: './app.component.html',
   styleUrl: './app.component.scss',
 })

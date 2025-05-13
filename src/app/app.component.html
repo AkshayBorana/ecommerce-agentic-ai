@@ -6,6 +6,7 @@
   </p>
 </header>
 <section class="container">
+  <!-- Product lists -->
   <section class="product-listing">
     <ul>
       @for(product of productList(); track product.name){
@@ -22,6 +23,29 @@
       }
     </ul>
   </section>
+
+  <!-- AI Chatbot -->
+  <section class="agent-window">
+    <section class="chat-history" #chatHistoryContainer>
+        @for(message of messageHistory(); track message){
+        <p class="{{ message.sender }}-message">{{ message.text }}</p>
+        }
+    </section>
+    <div class="control-sections">
+      <label for="user-question" #scroll>
+        <p class="user-question-label">Ask the shopping helper a question</p>
+        <input
+        id="user-question"
+        class="chat-input"
+        (keyup.enter)="submitMessage(questionInput)"
+        type="text"
+        #questionInput
+        />
+      </label>
+        <button class="submit-btn" (click)="submitMessage(questionInput)">Send</button>
+    </div>
+  </section>
+
 </section>
 
 <router-outlet />

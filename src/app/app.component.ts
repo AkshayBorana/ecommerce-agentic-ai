@@ -1,7 +1,8 @@
-import { Component, inject, signal } from '@angular/core';
+import { Component, ElementRef, inject, signal, viewChild } from '@angular/core';
 import { RouterOutlet } from '@angular/router';
 import { ProductService } from './services/products.service';
-import { Product } from './model/product.interface';
+import { Product } from './model/product';
+import { Message } from './model/message';
 
 @Component({
   selector: 'app-root',
@@ -11,10 +12,14 @@ import { Product } from './model/product.interface';
 })
 export class AppComponent {
 
-  public title = 'Ecommerce Agentic AI';
-  public productsService = inject(ProductService);
+  public title: string = 'Ecommerce Agentic AI';
 
-  productList = signal<Product[]>([]);
+  public productsService: ProductService = inject(ProductService);
+  public productList = signal<Product[]>([]);
+  public messageHistory = signal<Message[]>([]);
+
+  private chatHistoryContainer = viewChild<ElementRef>('chatHistoryContainer');
+
 
   constructor() {
     this.productList.set(this.productsService.getProducts());
@@ -25,5 +30,9 @@ export class AppComponent {
    */
   public addToCart(product: Product): void {
     this.productsService.addToCart(product);
+  }
+
+  public submitMessage(userMesg: HTMLInputElement) {
+
   }
 }

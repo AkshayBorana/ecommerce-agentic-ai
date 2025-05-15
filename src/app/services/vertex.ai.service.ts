@@ -9,6 +9,8 @@ import {
   FunctionDeclarationsTool,
   Schema,
   ObjectSchemaInterface,
+  FunctionCall,
+  GenerateContentResult,
 } from 'firebase/vertexai';
 import { Product } from '../model/product';
 import { ProductService } from './products.service';
@@ -25,11 +27,11 @@ export class VertexAIService {
   constructor(@Inject('FIREBASE_APP') private firebaseApp: FirebaseApp) {
     const productsToolSet: FunctionDeclarationsTool = {
       functionDeclarations: [
-        {
-          name: 'getNumberOfProducts',
-          description:
-            'Get a count of the number of products available in the inventory.',
-        },
+        // {
+        //   name: 'getNumberOfProducts',
+        //   description:
+        //     'Get a count of the number of products available in the inventory.',
+        // },
         {
           name: 'getProducts',
           description:
@@ -66,11 +68,13 @@ export class VertexAIService {
 
     const systemInstruction = `Welcome to Ecommerce Agentic AI.
     You are a superstar agent for this ecommerce store.
-    You will assist users by answering questions about the inventory and event being able to add items to the cart.`;
+    You will assist users by answering questions about the inventory, list of products in the inventory and their respective prices and even being able to add items to the cart.
+    If you're asked about ingredients to make a recipe or anything, use your tools to help you answer.
+    For example you can first get the inventory which contains the items and prices for those items.`;
 
     // Initializing a GenerativeModel model.
     this.model = getGenerativeModel(vertexAI, {
-      model: 'gemini-2.0-flash',
+      model: 'gemini-2.5-pro-preview-03-25',
       systemInstruction,
       tools: [productsToolSet],
     });
@@ -78,53 +82,54 @@ export class VertexAIService {
     this.chat = this.model.startChat();
   }
 
+  async callFunctions(functionCalls: FunctionCall[]): Promise<GenerateContentResult> {
+    let result;
+      for (const functionCall of functionCalls) {
+        if(functionCall.name === 'getProducts') {
+          const functionResult = this.getProducts();
+          result = await this.chat.sendMessage([
+            {
+              functionResponse: {
+                name: functionCall.name,
+                response: { products: functionResult },
+              },
+            },
+          ]);
+
+          const fnCalls = result.response.functionCalls();
+          if(fnCalls) {
+           return this.callFunctions(fnCalls);
+          }
+        }
+
+        if( functionCall.name === 'addToCart') {
+          const args = functionCall.args as { productsToAdd: Product[] };
+          const functionResult = this.addToCart(args.productsToAdd);
+          result = await this.chat.sendMessage([
+            {
+              functionResponse: {
+                name: functionCall.name,
+                response: { numberOfProductsAdded: functionResult },
+              },
+            },
+          ]);
+
+          const fnCalls = result.response.functionCalls();
+          if(fnCalls) {
+           return this.callFunctions(fnCalls);
+          }
+
+        }
+      }
+    return  result!;
+  }
+
   async ask(prompt: string) {
     let result = await this.chat.sendMessage(prompt);
     const functionCalls = result.response.functionCalls();
 
-    if (functionCalls && functionCalls.length) {
-      for (const functionCall of functionCalls) {
-        switch (functionCall.name) {
-          case 'getNumberOfProducts': {
-            const functionResult = this.getNumberOfProducts();
-            result = await this.chat.sendMessage([
-              {
-                functionResponse: {
-                  name: functionCall.name,
-                  response: { numberOfProducts: functionResult },
-                },
-              },
-            ]);
-            break;
-          }
-          case 'getProducts': {
-            const functionResult = this.getProducts();
-            result = await this.chat.sendMessage([
-              {
-                functionResponse: {
-                  name: functionCall.name,
-                  response: { products: functionResult },
-                },
-              },
-            ]);
-            break;
-          }
-          case 'addToCart': {
-            const args = functionCall.args as { productsToAdd: Product[] };
-            const functionResult = this.addToCart(args.productsToAdd);
-
-            result = await this.chat.sendMessage([
-              {
-                functionResponse: {
-                  name: functionCall.name,
-                  response: { numberOfProductsAdded: functionResult },
-                },
-              },
-            ]);
-            break;
-          }
-        }
-      }
+    if(functionCalls && functionCalls.length) {
+      result = await this.callFunctions(functionCalls);
     }
 
     return result.response.text();

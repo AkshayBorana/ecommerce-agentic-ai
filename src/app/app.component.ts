@@ -1,5 +1,6 @@
 import {
   Component,
+  effect,
   ElementRef,
   inject,
   signal,
@@ -10,7 +11,7 @@ import { ProductService } from './services/products.service';
 import { Product } from './model/product';
 import { Message } from './model/message';
 import { VertexAIService } from './services/vertex.ai.service';
-import { CurrencyPipe } from "@angular/common";
+import { CurrencyPipe } from '@angular/common';
 
 @Component({
   selector: 'app-root',
@@ -28,8 +29,21 @@ export class AppComponent {
   private chatHistoryContainer = viewChild<ElementRef>('chatHistoryContainer');
   private readonly vertexAIService = inject(VertexAIService);
 
+  private readonly scrollEffect = effect(() => {
+    if (this.messageHistory().length > 0) {
+      const container = this.chatHistoryContainer();
+      if (container) {
+        container.nativeElement.scrollTo(
+          0,
+          container.nativeElement.scrollHeight + 600
+        );
+      }
+    }
+  });
+
   constructor() {
     this.productList.set(this.productsService.getProducts());
+    this.productsService.filterCriteria.set([]);
   }
 
   /** Ask a question to the model */

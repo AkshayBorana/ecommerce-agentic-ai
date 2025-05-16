@@ -60,6 +60,32 @@ export class VertexAIService {
             },
           }) as ObjectSchemaInterface,
         },
+        {
+          name: 'filterProducts',
+          description:
+          `Get the inventory list first. Update the visible inventory by filtering the available products.
+          This function requires an array of product or products to filter by.
+          Return a list of filtered products.`,
+          parameters: Schema.object({
+            properties: {
+              productsToFilter: Schema.array({
+                items: Schema.object({
+                  description: 'A single product with its name and price.',
+                  properties: {
+                    name: Schema.string({
+                      description: 'The name of the product.',
+                    }),
+                    price: Schema.number({
+                      description: 'The numerical price of the product.',
+                    }),
+                  },
+                  // Specify which properties within each product object are required
+                  required: ['name', 'price'],
+                }),
+              }),
+            },
+          }) as ObjectSchemaInterface
+        }
       ],
     };
 
@@ -118,8 +144,26 @@ export class VertexAIService {
           if(fnCalls) {
            return this.callFunctions(fnCalls);
           }
-
         }
+
+        if(functionCall.name === 'filterProducts') {
+          const args = functionCall.args as { productsToFilter: Product[] };
+          const functionResult = this.filterProducts(args.productsToFilter);
+          result = await this.chat.sendMessage([
+            {
+              functionResponse: {
+                name: functionCall.name,
+                response: { numberOfProductsFiltered: functionResult }
+              }
+            }
+          ]);
+
+          const fnCalls = result.response.functionCalls();
+          if(fnCalls) {
+           return this.callFunctions(fnCalls);
+          }
+        }
+
       }
     return  result!;
   }
@@ -148,4 +192,9 @@ export class VertexAIService {
       this.productService.addToCart(productsToAdd[i]);
     }
   }
+
+  private filterProducts(productsToFilter: Product[]) {
+    this.productService.filterCriteria.set(productsToFilter);
+  }
+
 }

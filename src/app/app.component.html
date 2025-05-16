@@ -9,7 +9,7 @@
   <!-- Product lists -->
   <section class="product-listing">
     <ul>
-      @for(product of productList(); track product.name){
+      @for(product of productsService.filteredProductList(); track product.name){
       <li class="product-card">
         <img class="product-image" [src]="product.image" alt="{{ product.name }}" width="150" height="214" />
         <div class="product-info">
